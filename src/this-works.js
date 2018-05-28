@@ -22,18 +22,7 @@ const AsyncText = ({ text }) => {
   }
 };
 
-function Fallback({delayMs, placeholder, children}) {
-  return (
-    <Timeout ms={delayMs}>
-      {didExpire => {
-        console.log('didExpire: ', didExpire);
-        return (didExpire ? placeholder : children);
-      }}
-    </Timeout>
-  )
-};
-
-class App extends Component {
+class Fallback extends Component {
   state = { shouldRender: false };
 
   componentDidMount() {
@@ -43,8 +32,22 @@ class App extends Component {
   }
 
   render() {
+    const {delayMs, children, placeholder} = this.props;
     const {shouldRender} = this.state;
     return shouldRender ? (
+      <Timeout ms={delayMs}>
+        {didExpire => {
+          console.log('didExpire: ', didExpire);
+          return (didExpire ? placeholder : children);
+        }}
+      </Timeout>
+    ) : null;
+  }
+};
+
+class App extends Component {
+  render() {
+    return (
       <Fragment>
         <div>Suspense demo</div>
         <Fallback delayMs={2000} placeholder={<div>Loading...</div>}>
@@ -52,7 +55,7 @@ class App extends Component {
           <AsyncText text="Async content has been loaded" />
         </Fallback>
       </Fragment>
-    ) : null;
+    );
   }
 }
 
