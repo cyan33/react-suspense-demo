@@ -1,65 +1,46 @@
-import React, { Timeout, Fragment, Component } from 'react';
-import ReactDOM from 'react-dom';
-import {createCache, createResource} from 'simple-cache-provider';
+import React, { Timeout, Fragment } from "react";
+import ReactDOM from "react-dom";
+import { createCache, createResource } from "simple-cache-provider";
 
 const cache = createCache();
-const textResouce = createResource((text) => {
+const textResouce = createResource((text, ms = 2000) => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(text);
-    }, 4000);
+    }, ms);
   });
-});
+}, ([text, ms]) => text);
 
-const AsyncText = ({ text }) => {
+const AsyncText = ({ text, ms }) => {
   try {
-    textResouce.read(cache, text);
-    console.log('%cResolves', 'background: #222; color: #bada55');
+    textResouce.read(cache, [text, ms]);
+    console.log("%cResolves", "background: #222; color: #bada55");
     return <div>{text}</div>;
   } catch (promise) {
-    console.log('%cSuspend', 'background: blue; color: white');
+    console.log("%cSuspend", "background: blue; color: white");
     throw promise;
   }
 };
 
-function Fallback({delayMs, placeholder, children}) {
+function Fallback({ delayMs, placeholder, children }) {
   return (
     <Timeout ms={delayMs}>
-      {didExpire => {
-        console.log('didExpire: ', didExpire);
-        return (didExpire ? placeholder : children);
-      }}
+      {didExpire => (didExpire ? placeholder : children)}
     </Timeout>
-  )
-};
-
-class App extends Component {
-  state = { shouldRender: false };
-
-  componentDidMount() {
-    ReactDOM.unstable_deferredUpdates(() => {
-      this.setState({ shouldRender: true });
-    });
-  }
-
-  render() {
-    const {shouldRender} = this.state;
-    return shouldRender ? (
-      <Fragment>
-        <div>Suspense demo</div>
-        <Fallback delayMs={2000} placeholder={<div>Loading...</div>}>
-          <div>Sync</div>
-          <AsyncText text="Async content has been loaded" />
-        </Fallback>
-      </Fragment>
-    ) : null;
-  }
+  );
 }
 
-// Expected behavior inside <Fallback />:
-// 1. Empty content
-// 2. <div>Loading...</div>
-// 3. <div>Sync</div>
-//    <div>Async content has been loaded</div>
+function App() {
+  return (
+    <Fragment>
+      <div>Suspense demo</div>
+      <Fallback delayMs={1000} placeholder={<div>Loading...</div>}>
+        <div>Sync Content</div>
+        <AsyncText text="Async content has been loaded" />
+      </Fallback>
+    </Fragment>
+  );
+}
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = ReactDOM.unstable_createRoot(document.getElementById("root"));
+root.render(<App />);
