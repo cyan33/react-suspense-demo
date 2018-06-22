@@ -46,5 +46,4 @@ Andrew's [talk](https://www.youtube.com/watch?v=z-6JC0_cOns) on React suspense.
 
 ## Caveats
 
-* In order to use Suspense, your react component tree should be in async mode. You could use `ReactDOM.unstable_createRoot` to achieve this.
 * The `Timeout` component suspends the whole component tree, not only those wrapped inside.
